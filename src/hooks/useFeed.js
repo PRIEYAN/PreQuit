@@ -20,6 +20,12 @@ export function useFeed(surface = 'home', { limit = 20 } = {}) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const mounted = useRef(true);
+  // Mirrors `items` so a toggle can read the pre-toggle post synchronously.
+  // Reading it out of the setItems updater instead would be unsafe: React does
+  // not promise the updater has run by the next statement, so the request could
+  // be skipped entirely and the tap would silently never persist.
+  const itemsRef = useRef([]);
+  itemsRef.current = items;
 
   useEffect(() => {
     mounted.current = true;
@@ -60,60 +66,45 @@ export function useFeed(surface = 'home', { limit = 20 } = {}) {
   }, [load]);
 
   /**
-   * Applies the like locally first so the tap feels instant, and rolls the
-   * exact previous item back if the request fails.
+   * Applies the change locally first so the tap feels instant, then calls the
+   * API and restores the exact previous item if it fails.
    */
-  const toggleLike = useCallback(async postId => {
-    let previous = null;
-    setItems(current =>
-      current.map(item => {
-        if (item.id !== postId) return item;
-        previous = item;
-        const hasLiked = !item.viewer.hasLiked;
-        return {
-          ...item,
-          viewer: { ...item.viewer, hasLiked },
-          counts: {
-            ...item.counts,
-            likes: Math.max(0, item.counts.likes + (hasLiked ? 1 : -1)),
-          },
-        };
-      }),
-    );
+  const toggle = useCallback(async (postId, field, countKey, call) => {
+    const previous = itemsRef.current.find(item => item.id === postId);
     if (!previous) return;
+    const next = !previous.viewer[field];
+
+    setItems(current =>
+      current.map(item =>
+        item.id === postId
+          ? {
+              ...item,
+              viewer: { ...item.viewer, [field]: next },
+              counts: {
+                ...item.counts,
+                [countKey]: Math.max(0, item.counts[countKey] + (next ? 1 : -1)),
+              },
+            }
+          : item,
+      ),
+    );
+
     try {
-      if (previous.viewer.hasLiked) await postsApi.unlike(postId);
-      else await postsApi.like(postId);
+      await call(postId, previous.viewer[field]);
     } catch {
       setItems(current => current.map(item => (item.id === postId ? previous : item)));
     }
   }, []);
 
-  const toggleSave = useCallback(async postId => {
-    let previous = null;
-    setItems(current =>
-      current.map(item => {
-        if (item.id !== postId) return item;
-        previous = item;
-        const hasSaved = !item.viewer.hasSaved;
-        return {
-          ...item,
-          viewer: { ...item.viewer, hasSaved },
-          counts: {
-            ...item.counts,
-            saves: Math.max(0, item.counts.saves + (hasSaved ? 1 : -1)),
-          },
-        };
-      }),
-    );
-    if (!previous) return;
-    try {
-      if (previous.viewer.hasSaved) await postsApi.unsave(postId);
-      else await postsApi.save(postId);
-    } catch {
-      setItems(current => current.map(item => (item.id === postId ? previous : item)));
-    }
-  }, []);
+  const toggleLike = useCallback(
+    postId => toggle(postId, 'hasLiked', 'likes', (id, wasSet) => (wasSet ? postsApi.unlike(id) : postsApi.like(id))),
+    [toggle],
+  );
+
+  const toggleSave = useCallback(
+    postId => toggle(postId, 'hasSaved', 'saves', (id, wasSet) => (wasSet ? postsApi.unsave(id) : postsApi.save(id))),
+    [toggle],
+  );
 
   return {
     items,
