@@ -14,10 +14,18 @@ export const ROUTES = {
   // Friends
   FRIENDS: 'Friends',
   FRIEND_REQUESTS: 'FriendRequests',
+  DM: 'DM',
 
   // Profile
   PERSONAL: 'Personal',
   SETTINGS: 'Settings',
+
+  // Main tab shell (post-auth)
+  MAIN: 'Main',
+  TAB_HOME: 'TabHome',
+  TAB_SOCIAL: 'TabSocial',
+  TAB_FRIENDS: 'TabFriends',
+  TAB_PROFILE: 'TabProfile',
 };
 
 export default ROUTES;

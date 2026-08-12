@@ -4,15 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import ROUTES from './routes';
 
+import MainTabs from './MainTabs';
 import Splash from '../screens/splash';
 import OnBoard from '../screens/auth/onBoard';
 import SignIn from '../screens/auth/signin';
 import SignUp from '../screens/auth/signup';
 import ResetPassword from '../screens/auth/resetpassword';
-import Search from '../screens/dashboard/search';
-import Friends from '../screens/friends/friends';
-import FriendRequests from '../screens/friends/request';
-import Personal from '../screens/profile/personal';
 import Settings from '../screens/profile/settings';
 
 const Stack = createNativeStackNavigator();
@@ -66,15 +63,10 @@ const RootNavigator = () => {
         />
         <Stack.Screen name={ROUTES.RESET_PASSWORD} component={ResetPassword} />
 
-        {/* Dashboard */}
-        <Stack.Screen name={ROUTES.SEARCH} component={Search} />
+        {/* Main app shell — the 4-tab floating glass nav */}
+        <Stack.Screen name={ROUTES.MAIN} component={MainTabs} />
 
-        {/* Friends */}
-        <Stack.Screen name={ROUTES.FRIENDS} component={Friends} />
-        <Stack.Screen name={ROUTES.FRIEND_REQUESTS} component={FriendRequests} />
-
-        {/* Profile */}
-        <Stack.Screen name={ROUTES.PERSONAL} component={Personal} />
+        {/* Standalone routes reachable from within tabs (deep navigation) */}
         <Stack.Screen name={ROUTES.SETTINGS} component={Settings} />
       </Stack.Navigator>
     </NavigationContainer>

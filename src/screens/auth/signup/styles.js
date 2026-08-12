@@ -96,6 +96,16 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
   },
+  // Sits directly above the submit button so the failure is where the tap was.
+  error: {
+    color: '#C62828',
+    fontSize: 14,
+    lineHeight: 19,
+    marginBottom: 12,
+  },
+  createButtonDisabled: {
+    opacity: 0.6,
+  },
   createButton: {
     backgroundColor: COLORS.black,
     height: 52,

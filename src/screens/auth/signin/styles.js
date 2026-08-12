@@ -102,12 +102,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 24,
   },
+  // Sits between the form and the submit button so it cannot be missed.
+  error: {
+    color: '#FF6B6B',
+    fontSize: 14,
+    lineHeight: 19,
+    marginBottom: 12,
+  },
   loginButton: {
     backgroundColor: COLORS.white,
     height: 52,
     borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
   },
   loginButtonText: {
     color: COLORS.black,

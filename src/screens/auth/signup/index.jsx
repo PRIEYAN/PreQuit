@@ -7,6 +7,7 @@ import {
   ScrollView,
   useWindowDimensions,
   BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,6 +23,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import styles, { COLORS } from './styles';
+import ROUTES from '../../../navigation/routes';
+import { useAuth } from '../../../state/AuthContext';
 
 const EXPAND_MS = 340;
 
@@ -46,12 +49,18 @@ const SignUp = () => {
 
   // 0 = collapsed onto the button rect, 1 = fully expanded fullscreen.
   const progress = useSharedValue(0);
+  const [handle, setHandle] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [dob, setDob] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
+  const { signUp } = useAuth();
 
   const onDobChange = (event, selected) => {
     // Android fires 'dismissed' when the user cancels; keep the old value.
@@ -76,6 +85,40 @@ const SignUp = () => {
       easing: Easing.out(Easing.cubic),
     });
   }, [progress]);
+
+  const submit = useCallback(async () => {
+    if (isSubmitting) return;
+    if (!handle.trim() || !displayName.trim() || !email.trim() || !password) {
+      setError('Fill in every field to continue.');
+      return;
+    }
+    if (password !== confirm) {
+      setError('Both passwords must match.');
+      return;
+    }
+    if (!dob) {
+      setError('Enter your date of birth.');
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await signUp({
+        handle: handle.trim(),
+        displayName: displayName.trim(),
+        email: email.trim(),
+        password,
+        // The API expects a plain calendar date, not a timestamp.
+        dateOfBirth: dob.toISOString().slice(0, 10),
+      });
+      // Registration issues no session: the account has to verify its email
+      // first, so send them to sign-in rather than into the app shell.
+      navigation.reset({ index: 0, routes: [{ name: ROUTES.SIGNIN }] });
+    } catch (err) {
+      setError(err.message ?? 'Could not create your account.');
+      setIsSubmitting(false);
+    }
+  }, [handle, displayName, email, password, confirm, dob, isSubmitting, signUp, navigation]);
 
   const close = useCallback(() => {
     progress.value = withTiming(
@@ -149,6 +192,9 @@ const SignUp = () => {
                 placeholderTextColor={COLORS.placeholder}
                 autoCapitalize="none"
                 autoCorrect={false}
+                value={handle}
+                onChangeText={setHandle}
+                editable={!isSubmitting}
               />
             </View>
 
@@ -158,6 +204,9 @@ const SignUp = () => {
                 placeholder="Display Name"
                 placeholderTextColor={COLORS.placeholder}
                 autoCorrect={false}
+                value={displayName}
+                onChangeText={setDisplayName}
+                editable={!isSubmitting}
               />
             </View>
 
@@ -169,6 +218,9 @@ const SignUp = () => {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+                editable={!isSubmitting}
               />
             </View>
 
@@ -237,8 +289,17 @@ const SignUp = () => {
               />
             )}
 
-            <Pressable style={styles.createButton}>
-              <Text style={styles.createButtonText}>Create Account</Text>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            <Pressable
+              style={[styles.createButton, isSubmitting && styles.createButtonDisabled]}
+              onPress={submit}
+              disabled={isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <Text style={styles.createButtonText}>Create Account</Text>
+              )}
             </Pressable>
           </ScrollView>
         </Animated.View>
