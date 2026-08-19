@@ -6,7 +6,14 @@ import { useNavigation } from '@react-navigation/native';
 import { TAB_BAR_SPACE } from '../../../theme';
 import styles from './styles';
 import ROUTES from '../../../navigation/routes';
-import { useAuth } from '../../../state/AuthContext';
+
+// Placeholder profile until the API is wired back up.
+const USER = {
+  displayName: 'prie.aur',
+  handle: 'mogger',
+  bio: 'i use arch btw',
+  counts: { posts: 27, followers: 2, following: 5 },
+};
 
 const Stat = ({ value, label }) => (
   <View style={styles.stat}>
@@ -18,13 +25,7 @@ const Stat = ({ value, label }) => (
 const Personal = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { user } = useAuth();
-
-  // The session is restored before this screen can mount, but guard anyway so
-  // a signed-out render cannot crash on a missing field.
-  const displayName = user?.displayName ?? '';
-  const handle = user?.handle ?? '';
-  const counts = user?.counts ?? { posts: 0, followers: 0, following: 0 };
+  const { displayName, handle, counts } = USER;
 
   return (
     <View style={styles.container}>
@@ -43,7 +44,7 @@ const Personal = () => {
           </View>
           <Text style={styles.name}>{displayName}</Text>
           <Text style={styles.handle}>@{handle}</Text>
-          {user?.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
+          <Text style={styles.bio}>{USER.bio}</Text>
         </View>
 
         {/* Stats */}

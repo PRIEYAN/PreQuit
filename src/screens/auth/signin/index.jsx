@@ -6,7 +6,6 @@ import {
   Pressable,
   useWindowDimensions,
   BackHandler,
-  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +21,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import styles, { COLORS } from './styles';
 import ROUTES from '../../../navigation/routes';
-import { useAuth } from '../../../state/AuthContext';
 
 const BUTTON_RADIUS = 0;
 const EXPAND_MS = 340;
@@ -40,12 +38,9 @@ const SignIn = () => {
 
   // 0 = collapsed onto the button rect, 1 = fully expanded fullscreen.
   const progress = useSharedValue(0);
-  const { signIn } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
 
   // Precompute the transform that maps a fullscreen box onto the button
   // rect. Animating only scale/translate/opacity keeps everything on the
@@ -87,23 +82,11 @@ const SignIn = () => {
     return () => sub.remove();
   }, [expand, close]);
 
-  const submit = useCallback(async () => {
-    if (isSubmitting) return;
-    if (!identifier.trim() || !password) {
-      setError('Enter your email or username and password.');
-      return;
-    }
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await signIn(identifier.trim(), password);
-      // Reset rather than navigate so Back cannot return to the auth stack.
-      navigation.reset({ index: 0, routes: [{ name: ROUTES.MAIN }] });
-    } catch (err) {
-      setError(err.message ?? 'Could not sign in.');
-      setIsSubmitting(false);
-    }
-  }, [identifier, password, isSubmitting, signIn, navigation]);
+  // No backend yet — go straight to the app shell. Reset rather than navigate
+  // so Back cannot return to the auth stack.
+  const submit = useCallback(() => {
+    navigation.reset({ index: 0, routes: [{ name: ROUTES.MAIN }] });
+  }, [navigation]);
 
   // Panel morph: transform-only (scale + translate) + radius fade.
   const panelStyle = useAnimatedStyle(() => {
@@ -158,7 +141,6 @@ const SignIn = () => {
               autoCorrect={false}
               value={identifier}
               onChangeText={setIdentifier}
-              editable={!isSubmitting}
             />
           </View>
 
@@ -170,7 +152,6 @@ const SignIn = () => {
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
-              editable={!isSubmitting}
               onSubmitEditing={submit}
               returnKeyType="go"
             />
@@ -192,17 +173,8 @@ const SignIn = () => {
             <Text style={styles.forgot}>Forgot your password?</Text>
           </Pressable>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <Pressable
-            style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-            onPress={submit}
-            disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator color={COLORS.black} />
-            ) : (
-              <Text style={styles.loginButtonText}>Log In</Text>
-            )}
+          <Pressable style={styles.loginButton} onPress={submit}>
+            <Text style={styles.loginButtonText}>Log In</Text>
           </Pressable>
         </Animated.View>
       </Animated.View>

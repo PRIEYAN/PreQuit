@@ -11,7 +11,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import ROUTES from '../../navigation/routes';
 import styles, { COLORS, SOLAR } from './styles';
-import { useAuth } from '../../state/AuthContext';
 
 const LOGO = require('../../assets/logo.png');
 
@@ -130,7 +129,6 @@ const SolarSystem = () => {
 
 const Splash = () => {
   const navigation = useNavigation();
-  const { status } = useAuth();
   const [ready, setReady] = useState(false);
   const actionsFade = useRef(new Animated.Value(0)).current;
   const loginBtnRef = useRef(null);
@@ -152,20 +150,15 @@ const Splash = () => {
   const openLogin = () => openFromButton(loginBtnRef, ROUTES.SIGNIN);
   const openSignup = () => openFromButton(createBtnRef, ROUTES.SIGNUP);
 
-  // Hold the splash until the stored session has been restored and checked,
-  // then either drop straight into the app or reveal the auth actions. The
-  // minimum duration keeps the animation from flashing on a fast restore.
+  // Runs the minimum splash duration alongside any startup work, then reveals
+  // the auth actions. Once there is a backend, the session check goes here and
+  // the actions appear when the slower of { that check, this duration } lands.
   useEffect(() => {
-    if (status === 'restoring') return;
     let cancelled = false;
 
     const bootstrap = async () => {
       await new Promise(res => setTimeout(res, SPLASH_MIN_DURATION));
       if (cancelled) return;
-      if (status === 'signedIn') {
-        navigation.reset({ index: 0, routes: [{ name: ROUTES.MAIN }] });
-        return;
-      }
       setReady(true);
     };
 
@@ -173,7 +166,7 @@ const Splash = () => {
     return () => {
       cancelled = true;
     };
-  }, [status, navigation]);
+  }, []);
 
   // Fade the actions in once startup is done.
   useEffect(() => {
