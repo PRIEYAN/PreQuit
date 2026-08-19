@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, TextInput, Pressable, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { COLORS, TAB_BAR_SPACE } from '../../../theme';
+import ROUTES from '../../../navigation/routes';
 import styles from './styles';
 
 // Sample chats. Swap for real conversations from the API later.
@@ -19,10 +21,13 @@ const CHATS = [
 
 const Separator = () => <View style={styles.separator} />;
 
-const ChatRow = ({ chat }) => {
+const ChatRow = ({ chat, onPress }) => {
   const unread = chat.unread > 0;
   return (
-    <Pressable style={styles.row} android_ripple={{ color: COLORS.glass }}>
+    <Pressable
+      style={styles.row}
+      android_ripple={{ color: COLORS.glass }}
+      onPress={() => onPress(chat)}>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{chat.name.charAt(0)}</Text>
       </View>
@@ -54,7 +59,20 @@ const ChatRow = ({ chat }) => {
 
 const Friends = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [query, setQuery] = useState('');
+
+  // The DM screen renders whoever it is handed, so the row passes the identity
+  // rather than the screen looking it up.
+  const openChat = useCallback(
+    chat =>
+      navigation.navigate(ROUTES.DM, {
+        chatId: chat.id,
+        name: chat.name,
+        status: chat.unread > 0 ? 'Online' : 'Last seen recently',
+      }),
+    [navigation],
+  );
 
   const data = CHATS.filter(c =>
     c.name.toLowerCase().includes(query.trim().toLowerCase()),
@@ -65,7 +83,7 @@ const Friends = () => {
       <FlatList
         data={data}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <ChatRow chat={item} />}
+        renderItem={({ item }) => <ChatRow chat={item} onPress={openChat} />}
         ItemSeparatorComponent={Separator}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_SPACE }}

@@ -11,6 +11,7 @@ import SignIn from '../screens/auth/signin';
 import SignUp from '../screens/auth/signup';
 import ResetPassword from '../screens/auth/resetpassword';
 import Settings from '../screens/profile/settings';
+import DM from '../screens/friends/dm';
 
 const Stack = createNativeStackNavigator();
 
@@ -68,6 +69,11 @@ const RootNavigator = () => {
 
         {/* Standalone routes reachable from within tabs (deep navigation) */}
         <Stack.Screen name={ROUTES.SETTINGS} component={Settings} />
+        <Stack.Screen
+          name={ROUTES.DM}
+          component={DM}
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

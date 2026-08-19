@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, FlatList, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import styles from './styles';
 import { COLORS, TAB_BAR_SPACE } from '../../../theme';
+import ROUTES from '../../../navigation/routes';
 import PostCard from '../../../components/PostCard';
 import { MOCK_POSTS } from './mockPosts';
 
@@ -15,14 +17,28 @@ const SURFACES = [
 ];
 
 /**
- * The feed, running on local mock data while the app is not connected to the
- * API. The surface tabs reorder the same posts so each one looks distinct;
- * once the backend is wired back in, each maps to its own ranked endpoint.
+ * The post feed, shown under the Social tab. Runs on local mock data while the
+ * app is not connected to the API; the surface tabs reorder the same posts so
+ * each looks distinct, and once the backend is wired back in each maps to its
+ * own ranked endpoint.
  */
 const Feed = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const [surface, setSurface] = useState('home');
   const [posts, setPosts] = useState(MOCK_POSTS);
+
+  // Tapping an author opens the conversation with them. These mock authors
+  // have no thread of their own yet, so the DM opens empty.
+  const openAuthorChat = useCallback(
+    author =>
+      navigation.navigate(ROUTES.DM, {
+        chatId: author.id,
+        name: author.displayName,
+        status: `@${author.handle}`,
+      }),
+    [navigation],
+  );
 
   const visible = useMemo(() => {
     if (surface === 'trending') {
@@ -56,8 +72,15 @@ const Feed = () => {
   const toggleSave = useCallback(postId => toggle(postId, 'hasSaved', 'saves'), [toggle]);
 
   const renderItem = useCallback(
-    ({ item }) => <PostCard post={item} onToggleLike={toggleLike} onToggleSave={toggleSave} />,
-    [toggleLike, toggleSave],
+    ({ item }) => (
+      <PostCard
+        post={item}
+        onToggleLike={toggleLike}
+        onToggleSave={toggleSave}
+        onPressAuthor={openAuthorChat}
+      />
+    ),
+    [toggleLike, toggleSave, openAuthorChat],
   );
 
   const keyExtractor = useCallback(item => item.id, []);
@@ -65,7 +88,7 @@ const Feed = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>PreQuit</Text>
+        <Text style={styles.title}>Social</Text>
       </View>
 
       <View style={styles.surfaces}>

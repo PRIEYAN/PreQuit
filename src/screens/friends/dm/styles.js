@@ -51,6 +51,11 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 
+  // Wraps the list and input bar so the keyboard lifts both together.
+  chatArea: {
+    flex: 1,
+  },
+
   // ── Messages ──────────────────────────────────────────────
   messages: {
     padding: 12,

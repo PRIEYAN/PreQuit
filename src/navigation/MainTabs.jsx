@@ -14,8 +14,9 @@ const Tab = createBottomTabNavigator();
 // Defined at module scope so it isn't recreated each render.
 const renderTabBar = props => <GlassTabBar {...props} />;
 
-// Post-auth shell: 4 tabs (Feed / Search / Friends / Profile) rendered
-// with a custom floating glass tab bar. Screens keep their own pure-black
+// Post-auth shell: 4 tabs (Home / Social / Friends / Profile) rendered
+// with a custom floating glass tab bar. Home is the search landing screen;
+// the post feed lives under Social. Screens keep their own pure-black
 // backgrounds; the bar floats over them.
 const MainTabs = () => {
   return (
@@ -25,8 +26,8 @@ const MainTabs = () => {
         headerShown: false,
         sceneStyle: { backgroundColor: '#000000' },
       }}>
-      <Tab.Screen name={ROUTES.TAB_HOME} component={Feed} />
-      <Tab.Screen name={ROUTES.TAB_SOCIAL} component={Search} />
+      <Tab.Screen name={ROUTES.TAB_HOME} component={Search} />
+      <Tab.Screen name={ROUTES.TAB_SOCIAL} component={Feed} />
       <Tab.Screen name={ROUTES.TAB_FRIENDS} component={Friends} />
       <Tab.Screen name={ROUTES.TAB_PROFILE} component={Personal} />
     </Tab.Navigator>
