@@ -1,149 +1,92 @@
-/**
- * @format
- */
+import { useFeed } from '../src/presentation/hooks/useFeed';
+import { FeedSurface } from '../src/domain/repositories/FeedRepository';
+import { renderHookValue, flush, actAsync } from '../test-support/renderHookValue';
+import { createTestContainer, withContainer } from '../test-support/testContainer';
+import { FakeFeedRepository, samplePost } from '../test-support/fakeRepositories';
 
-import React from 'react';
-import ReactTestRenderer, { act } from 'react-test-renderer';
-
-import { useFeed } from '../src/hooks/useFeed';
-import { feed as feedApi, posts as postsApi } from '../src/api/endpoints';
-
-jest.mock('../src/api/endpoints', () => ({
-  feed: { home: jest.fn(), explore: jest.fn(), trending: jest.fn() },
-  posts: { like: jest.fn(), unlike: jest.fn(), save: jest.fn(), unsave: jest.fn() },
-}));
-
-/**
- * Minimal hook harness on react-test-renderer, which this project already uses.
- * Renders the hook in a null-returning component and exposes its latest return
- * value, so the assertions read the same way renderHook's `result.current` would.
- */
-function renderHookValue(hook) {
-  const ref = { current: null };
-  const Probe = () => {
-    ref.current = hook();
-    return null;
-  };
-  let renderer;
-  act(() => {
-    renderer = ReactTestRenderer.create(<Probe />);
-  });
-  return { ref, unmount: () => act(() => renderer.unmount()) };
-}
-
-/** Lets queued promise callbacks and the resulting re-render flush. */
-const flush = async () => {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-};
-
-const item = (id, over = {}) => ({
-  post: {
-    id,
-    author: { id: 'a1', handle: 'nova', displayName: 'Nova', avatarUrl: null },
-    description: 'hello',
-    media: [],
-    topics: [],
-    counts: { likes: 2, comments: 0, shares: 0, saves: 1 },
-    viewer: { hasLiked: false, hasSaved: false, canEdit: false, canDelete: false },
-    ...over,
-  },
-  reason: { kind: 'fresh', label: 'Recently posted' },
-});
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  feedApi.home.mockResolvedValue({ items: [item('p1')] });
+const setup = (hook, container = createTestContainer()) => ({
+  container,
+  ...renderHookValue(hook, withContainer(container)),
 });
 
 describe('useFeed', () => {
-  it('flattens the API shape and keeps the ranking reason', async () => {
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+  it('exposes the posts the repository returned, ranking reason included', async () => {
+    const { ref } = setup(() => useFeed(FeedSurface.HOME));
     await flush();
-    expect(result.current.items).toHaveLength(1);
-    expect(result.current.items[0].id).toBe('p1');
-    expect(result.current.items[0].reason.label).toBe('Recently posted');
+
+    expect(ref.current.items).toHaveLength(1);
+    expect(ref.current.items[0].id).toBe('p1');
+    expect(ref.current.items[0].reason.label).toBe('Recently posted');
   });
 
   it('loads the surface the caller asked for', async () => {
-    feedApi.trending.mockResolvedValue({ items: [] });
-    renderHookValue(() => useFeed('trending'));
-    await flush();
-    expect(feedApi.trending).toHaveBeenCalled();
-    expect(feedApi.home).not.toHaveBeenCalled();
-  });
-
-  it('surfaces a load failure instead of showing an empty feed', async () => {
-    feedApi.home.mockRejectedValue(new Error('boom'));
-    const { ref: result } = renderHookValue(() => useFeed('home'));
-    await flush();
-    expect(result.current.error).toBeTruthy();
-    expect(result.current.items).toHaveLength(0);
-  });
-
-  it('applies a like immediately, before the request resolves', async () => {
-    let resolveLike;
-    postsApi.like.mockReturnValue(new Promise(res => { resolveLike = res; }));
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+    const { ref, container } = setup(() => useFeed(FeedSurface.TRENDING));
     await flush();
 
-    act(() => { result.current.toggleLike('p1'); });
-    expect(result.current.items[0].viewer.hasLiked).toBe(true);
-    expect(result.current.items[0].counts.likes).toBe(3);
-
-    await act(async () => { resolveLike(); });
-    expect(result.current.items[0].viewer.hasLiked).toBe(true);
+    expect(container.repositories.feed.calls[0].surface).toBe(FeedSurface.TRENDING);
+    expect(ref.current.isLoading).toBe(false);
   });
 
-  it('rolls a like back when the request fails', async () => {
-    postsApi.like.mockRejectedValue(new Error('offline'));
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+  it('applies a like immediately and persists it', async () => {
+    const { ref, container } = setup(() => useFeed());
     await flush();
+    await actAsync(() => ref.current.toggleLike('p1'));
 
-    await act(async () => { await result.current.toggleLike('p1'); });
-    expect(result.current.items[0].viewer.hasLiked).toBe(false);
-    expect(result.current.items[0].counts.likes).toBe(2);
+    expect(ref.current.items[0].viewer.hasLiked).toBe(true);
+    expect(ref.current.items[0].counts.likes).toBe(3);
+    expect(container.repositories.post.liked).toEqual(['p1']);
   });
 
-  it('unlikes an already-liked post', async () => {
-    feedApi.home.mockResolvedValue({
-      items: [item('p1', { viewer: { hasLiked: true, hasSaved: false, canEdit: false, canDelete: false } })],
+  it('unlikes a post the viewer had already liked', async () => {
+    const liked = samplePost('p1', {
+      viewer: { hasLiked: true, hasSaved: false },
+      counts: { likes: 5, comments: 0, shares: 0, saves: 0 },
     });
-    postsApi.unlike.mockResolvedValue(null);
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+    const container = createTestContainer({ repositories: { feed: new FakeFeedRepository([liked]) } });
+    const { ref } = setup(() => useFeed(), container);
     await flush();
+    await actAsync(() => ref.current.toggleLike('p1'));
 
-    await act(async () => { await result.current.toggleLike('p1'); });
-    expect(postsApi.unlike).toHaveBeenCalledWith('p1');
-    expect(result.current.items[0].counts.likes).toBe(1);
+    expect(ref.current.items[0].viewer.hasLiked).toBe(false);
+    expect(ref.current.items[0].counts.likes).toBe(4);
+    expect(container.repositories.post.unliked).toEqual(['p1']);
   });
 
-  it('rolls a save back when the request fails', async () => {
-    postsApi.save.mockRejectedValue(new Error('offline'));
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+  it('rolls the post back when persisting the like fails', async () => {
+    const container = createTestContainer();
+    container.repositories.post.failOn.add('like');
+    const { ref } = setup(() => useFeed(), container);
     await flush();
+    await actAsync(() => ref.current.toggleLike('p1'));
 
-    await act(async () => { await result.current.toggleSave('p1'); });
-    expect(result.current.items[0].viewer.hasSaved).toBe(false);
-    expect(result.current.items[0].counts.saves).toBe(1);
+    expect(ref.current.items[0].viewer.hasLiked).toBe(false);
+    expect(ref.current.items[0].counts.likes).toBe(2);
   });
 
-  it('never drives a count below zero', async () => {
-    feedApi.home.mockResolvedValue({
-      items: [
-        item('p1', {
-          counts: { likes: 0, comments: 0, shares: 0, saves: 0 },
-          viewer: { hasLiked: true, hasSaved: false, canEdit: false, canDelete: false },
-        }),
-      ],
-    });
-    postsApi.unlike.mockResolvedValue(null);
-    const { ref: result } = renderHookValue(() => useFeed('home'));
+  it('toggles a save through the save use case', async () => {
+    const { ref, container } = setup(() => useFeed());
+    await flush();
+    await actAsync(() => ref.current.toggleSave('p1'));
+
+    expect(ref.current.items[0].viewer.hasSaved).toBe(true);
+    expect(container.repositories.post.saved).toEqual(['p1']);
+  });
+
+  it('ignores a toggle for a post that is not loaded', async () => {
+    const { ref, container } = setup(() => useFeed());
+    await flush();
+    await actAsync(() => ref.current.toggleLike('missing'));
+
+    expect(container.repositories.post.liked).toEqual([]);
+  });
+
+  it('surfaces a load failure instead of throwing', async () => {
+    const container = createTestContainer();
+    container.repositories.feed.failure = new Error('boom');
+    const { ref } = setup(() => useFeed(), container);
     await flush();
 
-    await act(async () => { await result.current.toggleLike('p1'); });
-    expect(result.current.items[0].counts.likes).toBe(0);
+    expect(ref.current.error).toBeTruthy();
+    expect(ref.current.items).toEqual([]);
   });
 });

@@ -1,9 +1,5 @@
 /* eslint-env jest */
-/**
- * AsyncStorage is a native module with no JS implementation under Jest, and
- * this version ships no mock of its own, so stand in an in-memory store with
- * the same async contract the token store relies on.
- */
+
 jest.mock('@react-native-async-storage/async-storage', () => {
   let store = new Map();
   return {
@@ -26,9 +22,6 @@ jest.mock('@react-native-async-storage/async-storage', () => {
   };
 });
 
-// Reanimated 4 drives animations through a native worklets runtime that does
-// not exist under Jest. Its shipped mock still imports the real entry point,
-// so stub the surface this app uses directly.
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   const timing = (toValue, _config, callback) => {
@@ -54,11 +47,8 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-// The tab bar and auth screens schedule callbacks back onto the RN thread.
-// Outside the worklets runtime, running them inline is the correct stand-in.
 jest.mock('react-native-worklets', () => ({
   scheduleOnRN: (fn, ...args) => fn(...args),
 }));
 
-// Vector icons resolve a native font module at import time.
 jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');

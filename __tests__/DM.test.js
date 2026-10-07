@@ -1,17 +1,15 @@
-/**
- * @format
- */
-
 import React from 'react';
 import ReactTestRenderer, { act } from 'react-test-renderer';
 
-import DM from '../src/screens/friends/dm';
-import { threadFor } from '../src/screens/friends/dm/mockThreads';
+import DM from '../src/presentation/screens/friends/dm';
+import { createMessage } from '../src/domain/entities/Message';
+import { flush } from '../test-support/renderHookValue';
+import { createTestContainer, withSession } from '../test-support/testContainer';
+import { FakeSessionRepository } from '../test-support/fakeRepositories';
 
 const mockGoBack = jest.fn();
 let mockRouteParams = {};
 
-// The screen reads insets directly; outside a SafeAreaProvider that throws.
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
@@ -24,46 +22,125 @@ jest.mock('@react-navigation/native', () => ({
 const textsIn = tree =>
   tree.root
     .findAllByType('Text')
-    .flatMap(n => n.children)
-    .filter(c => typeof c === 'string');
+    .flatMap(node => node.children)
+    .filter(child => typeof child === 'string');
 
-const renderDM = params => {
+const thread = conversationId => [
+  createMessage({ id: 'm1', conversationId, senderId: 'peer', body: 'Did you see the checklist?' }, 'me'),
+  createMessage({ id: 'm2', conversationId, senderId: 'me', body: 'Went through it this morning.' }, 'me'),
+];
+
+const renderDM = async (params, container) => {
   mockRouteParams = params;
   let tree;
-  act(() => {
-    tree = ReactTestRenderer.create(<DM />);
+  await act(async () => {
+    tree = ReactTestRenderer.create(withSession(container)(<DM />));
+  });
+  await flush();
+  await act(async () => {
+    jest.runOnlyPendingTimers();
   });
   return tree;
 };
 
+const signedInContainer = () => {
+  const session = new FakeSessionRepository({ accessToken: 'a', refreshToken: 'r' });
+  return createTestContainer({ session });
+};
+
+beforeEach(() => {
+  jest.useFakeTimers();
+  mockGoBack.mockClear();
+});
+
+afterEach(async () => {
+  await act(async () => {
+    jest.runOnlyPendingTimers();
+  });
+  jest.useRealTimers();
+});
+
 describe('DM screen', () => {
-  it('shows the person it was handed in the header', () => {
-    const texts = textsIn(renderDM({ chatId: '1', name: 'Nova', status: 'Online' }));
+  it('shows the person it was handed in the header', async () => {
+    const container = signedInContainer();
+    const tree = await renderDM({ conversationId: '1', name: 'Nova', status: 'Online' }, container);
+
+    const texts = textsIn(tree);
     expect(texts).toContain('Nova');
     expect(texts).toContain('Online');
   });
 
-  it('renders that person’s previous messages', () => {
-    const texts = textsIn(renderDM({ chatId: '1', name: 'Nova' }));
-    expect(texts).toContain('See you at the launch 🚀');
-    expect(texts).toContain('Analytics keys and the store screenshots.');
+  it('renders the conversation history from the repository', async () => {
+    const container = signedInContainer();
+    container.repositories.messaging.threads['1'] = thread('1');
+
+    const tree = await renderDM({ conversationId: '1', name: 'Nova' }, container);
+    const texts = textsIn(tree);
+
+    expect(texts).toContain('Did you see the checklist?');
+    expect(texts).toContain('Went through it this morning.');
   });
 
-  it('keeps threads separate per chat', () => {
-    const texts = textsIn(renderDM({ chatId: '2', name: 'Kairo' }));
-    expect(texts).toContain('Sent the mockups over');
-    // Nova's history must not leak into Kairo's thread.
-    expect(texts).not.toContain('See you at the launch 🚀');
+  it('opens a conversation from a peer id when none was passed', async () => {
+    const container = signedInContainer();
+    await renderDM({ peerId: 'u_atlas', name: 'Atlas' }, container);
+
+    expect(container.repositories.messaging.opened).toEqual(['u_atlas']);
   });
 
-  it('opens an empty thread for an unknown chat instead of crashing', () => {
-    expect(threadFor('nope')).toEqual([]);
-    const texts = textsIn(renderDM({ chatId: 'nope', name: 'Stranger' }));
-    expect(texts).toContain('Stranger');
+  it('appends a sent message and keeps it after the server confirms', async () => {
+    const container = signedInContainer();
+    container.repositories.messaging.threads['1'] = [];
+    const tree = await renderDM({ conversationId: '1', name: 'Nova' }, container);
+
+    const input = tree.root.findByType('TextInput');
+    await act(async () => input.props.onChangeText('Shipping tonight'));
+    await act(async () => input.props.onSubmitEditing());
+    await flush();
+
+    expect(textsIn(tree)).toContain('Shipping tonight');
+    expect(container.repositories.messaging.sent[0].body).toBe('Shipping tonight');
   });
 
-  it('falls back to a default title when opened with no params', () => {
-    const texts = textsIn(renderDM(undefined));
-    expect(texts).toContain('Chat');
+  it('marks a message as undelivered when sending fails', async () => {
+    const container = signedInContainer();
+    container.repositories.messaging.threads['1'] = [];
+    container.repositories.messaging.failSend = true;
+    const tree = await renderDM({ conversationId: '1', name: 'Nova' }, container);
+
+    const input = tree.root.findByType('TextInput');
+    await act(async () => input.props.onChangeText('will not arrive'));
+    await act(async () => input.props.onSubmitEditing());
+    await flush();
+
+    expect(textsIn(tree)).toContain('Not delivered');
+  });
+
+  it('ignores an empty draft', async () => {
+    const container = signedInContainer();
+    container.repositories.messaging.threads['1'] = [];
+    const tree = await renderDM({ conversationId: '1', name: 'Nova' }, container);
+
+    const input = tree.root.findByType('TextInput');
+    await act(async () => input.props.onChangeText('   '));
+    await act(async () => input.props.onSubmitEditing());
+    await flush();
+
+    expect(container.repositories.messaging.sent).toEqual([]);
+  });
+
+  it('goes back when the header chevron is pressed', async () => {
+    const container = signedInContainer();
+    const tree = await renderDM({ conversationId: '1', name: 'Nova' }, container);
+
+    const pressables = tree.root.findAllByType('View').length;
+    expect(pressables).toBeGreaterThan(0);
+
+    const backPressable = tree.root
+      .findAll(node => typeof node.type === 'object' || typeof node.type === 'function')
+      .find(node => node.props?.onPress && node.props?.hitSlop === 10);
+
+    await act(async () => backPressable.props.onPress());
+    expect(mockGoBack).toHaveBeenCalled();
   });
 });
