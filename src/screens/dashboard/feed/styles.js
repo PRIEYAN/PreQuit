@@ -67,6 +67,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
   },
+  footer: {
+    paddingVertical: 22,
+    alignItems: 'center',
+  },
+  footerText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+  },
+  footerSpacer: {
+    height: 8,
+  },
   retryButton: {
     marginTop: 18,
     paddingHorizontal: 22,
