@@ -1,0 +1,192 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        timeout(time: 45, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
+        disableConcurrentBuilds(abortPrevious: true)
+    }
+
+    parameters {
+        string(
+            name: 'BACKEND_REPO_URL',
+            defaultValue: 'https://github.com/PRIEYAN/preQuitBackend.git',
+            description: 'The API repository. The client and the API are separate repositories, so this pipeline checks out both.'
+        )
+        string(
+            name: 'BACKEND_BRANCH',
+            defaultValue: 'production-hardening',
+            description: 'Branch of the API repository to build.'
+        )
+        booleanParam(
+            name: 'RUN_INTEGRATION_TESTS',
+            defaultValue: false,
+            description: 'Run the MongoDB integration suites. Needs a reachable replica set at TEST_MONGODB_URI.'
+        )
+        booleanParam(
+            name: 'BUILD_IMAGES',
+            defaultValue: true,
+            description: 'Build the container images once the gates pass.'
+        )
+    }
+
+    environment {
+        CI = 'true'
+        NPM_CONFIG_FUND = 'false'
+        NPM_CONFIG_AUDIT = 'false'
+        CLIENT_DIR = 'client'
+        BACKEND_DIR = 'backend'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                dir(env.CLIENT_DIR) {
+                    checkout scm
+                }
+                dir(env.BACKEND_DIR) {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${params.BACKEND_BRANCH}"]],
+                        userRemoteConfigs: [[url: params.BACKEND_REPO_URL]]
+                    ])
+                }
+                script {
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}-${sh(script: "git -C ${env.CLIENT_DIR} rev-parse --short HEAD", returnStdout: true).trim()}"
+                }
+                sh 'node --version && npm --version'
+            }
+        }
+
+        stage('Install') {
+            parallel {
+                stage('client') {
+                    steps {
+                        dir(env.CLIENT_DIR) {
+                            sh 'npm ci --no-audit --no-fund'
+                        }
+                    }
+                }
+                stage('backend') {
+                    steps {
+                        dir("${env.BACKEND_DIR}/server") {
+                            sh 'npm ci --no-audit --no-fund'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Static analysis') {
+            parallel {
+                stage('client typecheck') {
+                    steps {
+                        dir(env.CLIENT_DIR) {
+                            sh 'npx tsc --noEmit'
+                        }
+                    }
+                }
+                stage('client lint') {
+                    steps {
+                        dir(env.CLIENT_DIR) {
+                            sh 'npx eslint src App.tsx --max-warnings 0'
+                        }
+                    }
+                }
+                stage('backend typecheck') {
+                    steps {
+                        dir("${env.BACKEND_DIR}/server") {
+                            sh 'npm run typecheck'
+                        }
+                    }
+                }
+                stage('backend lint') {
+                    steps {
+                        dir("${env.BACKEND_DIR}/server") {
+                            sh 'npx eslint "src/**/*.ts" --max-warnings 0'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            parallel {
+                stage('client') {
+                    steps {
+                        dir(env.CLIENT_DIR) {
+                            sh 'npx jest --ci --runInBand'
+                        }
+                    }
+                }
+                stage('backend') {
+                    steps {
+                        dir("${env.BACKEND_DIR}/server") {
+                            sh 'npx vitest run test/unit test/e2e'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Integration tests') {
+            when {
+                expression { params.RUN_INTEGRATION_TESTS }
+            }
+            steps {
+                dir("${env.BACKEND_DIR}/server") {
+                    sh 'npx vitest run test/integration'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir("${env.BACKEND_DIR}/server") {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Images') {
+            when {
+                expression { params.BUILD_IMAGES }
+            }
+            steps {
+                dir("${env.BACKEND_DIR}/server") {
+                    sh "docker build -t prequit/api:${env.IMAGE_TAG} -t prequit/api:latest ."
+                }
+            }
+        }
+
+        stage('Stack smoke test') {
+            when {
+                allOf {
+                    expression { params.BUILD_IMAGES }
+                    branch pattern: 'main|dev-test', comparator: 'REGEXP'
+                }
+            }
+            steps {
+                dir("${env.CLIENT_DIR}/infra") {
+                    sh './scripts/smoke-test.sh'
+                }
+            }
+            post {
+                always {
+                    dir("${env.CLIENT_DIR}/infra") {
+                        sh 'docker compose logs --no-color --tail=200 > compose-logs.txt 2>&1 || true'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: 'compose-logs.txt'
+                        sh 'docker compose down -v --remove-orphans || true'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Gates: client tsc + eslint + jest, backend typecheck + eslint + vitest (unit and e2e).'
+        }
+    }
+}
