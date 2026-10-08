@@ -8,6 +8,13 @@ module.exports = {
   extends: '@react-native',
   overrides: [
     {
+      files: ['landing/**/*.js'],
+      env: { browser: true, es2022: true },
+      rules: {
+        'no-undef': 'error',
+      },
+    },
+    {
       files: ['src/domain/**/*.js'],
       rules: {
         'no-restricted-imports': deny(

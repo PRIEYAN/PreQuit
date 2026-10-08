@@ -90,7 +90,7 @@ pipeline {
                 stage('client lint') {
                     steps {
                         dir(env.CLIENT_DIR) {
-                            sh 'npx eslint src App.tsx --max-warnings 0'
+                            sh 'npm run lint -- --max-warnings 0'
                         }
                     }
                 }
@@ -104,7 +104,7 @@ pipeline {
                 stage('backend lint') {
                     steps {
                         dir(env.BACKEND_DIR) {
-                            sh 'npx eslint "src/**/*.ts" --max-warnings 0'
+                            sh 'npm run lint -- --max-warnings 0'
                         }
                     }
                 }
