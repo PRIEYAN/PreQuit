@@ -15,6 +15,11 @@ pipeline {
             description: 'The API repository. The client and the API are separate repositories, so this pipeline checks out both.'
         )
         string(
+            name: 'LANDING_REPO_URL',
+            defaultValue: 'https://github.com/PRIEYAN/preQuitLanding.git',
+            description: 'The marketing site repository. Leave blank to skip building the landing page.'
+        )
+        string(
             name: 'BACKEND_BRANCH',
             defaultValue: 'production-hardening',
             description: 'Branch of the API repository to build.'
@@ -37,6 +42,7 @@ pipeline {
         NPM_CONFIG_AUDIT = 'false'
         CLIENT_DIR = 'client'
         BACKEND_DIR = 'backend'
+        LANDING_DIR = 'landing'
     }
 
     stages {
@@ -51,6 +57,17 @@ pipeline {
                         branches: [[name: "*/${params.BACKEND_BRANCH}"]],
                         userRemoteConfigs: [[url: params.BACKEND_REPO_URL]]
                     ])
+                }
+                script {
+                    if (params.LANDING_REPO_URL?.trim()) {
+                        dir(env.LANDING_DIR) {
+                            checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: '*/main']],
+                                userRemoteConfigs: [[url: params.LANDING_REPO_URL]]
+                            ])
+                        }
+                    }
                 }
                 script {
                     env.IMAGE_TAG = "${env.BUILD_NUMBER}-${sh(script: "git -C ${env.CLIENT_DIR} rev-parse --short HEAD", returnStdout: true).trim()}"
@@ -71,6 +88,16 @@ pipeline {
                 stage('backend') {
                     steps {
                         dir(env.BACKEND_DIR) {
+                            sh 'npm ci --no-audit --no-fund'
+                        }
+                    }
+                }
+                stage('landing') {
+                    when {
+                        expression { params.LANDING_REPO_URL?.trim() }
+                    }
+                    steps {
+                        dir(env.LANDING_DIR) {
                             sh 'npm ci --no-audit --no-fund'
                         }
                     }
@@ -142,9 +169,24 @@ pipeline {
         }
 
         stage('Build') {
-            steps {
-                dir(env.BACKEND_DIR) {
-                    sh 'npm run build'
+            parallel {
+                stage('backend') {
+                    steps {
+                        dir(env.BACKEND_DIR) {
+                            sh 'npm run build'
+                        }
+                    }
+                }
+                stage('landing') {
+                    when {
+                        expression { params.LANDING_REPO_URL?.trim() }
+                    }
+                    steps {
+                        dir(env.LANDING_DIR) {
+                            sh 'npm run typecheck'
+                            sh 'npm run build'
+                        }
+                    }
                 }
             }
         }

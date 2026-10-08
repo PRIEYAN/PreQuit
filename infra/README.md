@@ -11,7 +11,7 @@ infra/
 │   └── conf.d/
 │       ├── upstream.conf   the API upstream and its keepalive pool
 │       └── api.conf        server block: static, /api/, websockets, health, metrics
-├── jenkins/Jenkinsfile     checks out both repositories and runs every gate
+├── jenkins/Jenkinsfile     checks out all three repositories and runs every gate
 └── scripts/
     ├── bootstrap.sh        first run: keypair, stack, indexes, seed data
     └── smoke-test.sh       asserts the running stack actually works
@@ -51,11 +51,23 @@ docker compose down -v           # stop and drop the database volume
 | `api` | HTTP API | Cluster primary plus workers; only nginx reaches it |
 | `worker` | Outbox drain | Turns domain events into notifications and interest updates |
 | `scheduler` | Repeatable jobs | Must stay at one replica |
-| `nginx` | Edge | TLS termination point, static assets, reverse proxy |
+| `nginx` | Edge | TLS termination point, serves the landing page, reverse proxy |
 | `mailhog` | Mail capture | Development only |
 
 `api` is `expose`d rather than published, so it is reachable only from inside the
 compose network. Everything enters through nginx.
+
+## The landing page
+
+nginx serves `../../preQuitLanding/out`, which is the static export of the Next.js
+marketing site in the sibling `preQuitLanding` repository. It has no Node server:
+`next.config.ts` sets `output: 'export'`, so a build produces plain HTML, CSS and JS.
+
+Build it before bringing the stack up, or nginx will mount an empty directory:
+
+```bash
+cd ../../preQuitLanding && npm install && npm run build
+```
 
 ## nginx
 
