@@ -1,10 +1,441 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>PreQuit</title>
-  </head>
-  <body>
-    <p>PreQuit landing page placeholder.</p>
-  </body>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PreQuit — the interest graph, not the follower count</title>
+<meta name="description" content="PreQuit is a social platform organised around what you are actually interested in. A ranked feed built from your interests, a search that answers a problem with the people who have solved it, and messages that only open between mutuals." />
+<meta name="theme-color" content="#05060a" />
+<meta property="og:title" content="PreQuit — the interest graph, not the follower count" />
+<meta property="og:description" content="A ranked feed built from your interests, a search that answers a problem with the people who have solved it, and messages that only open between mutuals." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='7' fill='%23fff'/%3E%3Ccircle cx='16' cy='3.5' r='2.5' fill='%23ff3b30'/%3E%3Ccircle cx='28' cy='22' r='2.5' fill='%232e7dff'/%3E%3Ccircle cx='4' cy='22' r='2.5' fill='%238a2be2'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="brand" href="#top" aria-label="PreQuit home">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="6.5" fill="#fff" />
+        <circle cx="16" cy="16" r="11" fill="none" stroke="rgba(255,255,255,.2)" />
+        <circle cx="16" cy="5" r="2.4" fill="#ff3b30" />
+        <circle cx="25.5" cy="21.5" r="2.4" fill="#2e7dff" />
+        <circle cx="6.5" cy="21.5" r="2.4" fill="#8a2be2" />
+      </svg>
+      PreQuit
+    </a>
+
+    <nav class="nav__links" aria-label="Sections">
+      <a href="#what">What it is</a>
+      <a href="#feed">Feed</a>
+      <a href="#search">Search</a>
+      <a href="#messages">Messages</a>
+      <a href="#engineering">Engineering</a>
+    </nav>
+
+    <a class="button button--primary" href="#get">Get PreQuit</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="shell">
+      <span class="eyebrow reveal">Eye of the internet</span>
+
+      <h1 class="hero__title reveal">
+        The interest graph,<br />not the <span>follower count</span>.
+      </h1>
+
+      <p class="lede reveal">
+        Most feeds show you whoever shouted loudest. PreQuit builds a picture of what
+        you actually care about, then ranks everything against it — and when you have a
+        problem, it finds the people who have already solved it.
+      </p>
+
+      <div class="hero__actions reveal">
+        <a class="button button--primary" href="#get">Get PreQuit</a>
+        <a class="button button--ghost" href="#what">
+          See how it works
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </a>
+      </div>
+
+      <p class="hero__note reveal">Free. No ads. iOS and Android.</p>
+
+      <div class="stage">
+        <div class="orbit" aria-hidden="true">
+          <div class="orbit__ring orbit__ring--a"></div>
+          <div class="orbit__ring orbit__ring--b"></div>
+          <div class="orbit__ring orbit__ring--c"></div>
+          <div class="orbit__dot orbit__dot--a"></div>
+          <div class="orbit__dot orbit__dot--b"></div>
+          <div class="orbit__dot orbit__dot--c"></div>
+        </div>
+
+        <div class="phone reveal" role="img" aria-label="The PreQuit feed on a phone, showing ranked posts with the reason each one was surfaced.">
+          <div class="phone__screen">
+            <div class="phone__notch"></div>
+            <p class="phone__title">Social</p>
+
+            <div class="chips">
+              <span class="chip chip--on">For You</span>
+              <span class="chip">Explore</span>
+              <span class="chip">Trending</span>
+            </div>
+
+            <article class="card">
+              <div class="card__top">
+                <span class="avatar">K</span>
+                <span class="card__who">
+                  <span class="card__name">Kernel Panic</span>
+                  <span class="card__handle">@kernelpanic</span>
+                </span>
+              </div>
+              <span class="reason">Matches your interests</span>
+              <p class="card__body">
+                cgroups v2 finally unified the hierarchy. One tree instead of twelve
+                controllers each with their own mount.
+              </p>
+              <div class="card__meta"><span>287</span><span>5</span><span>40</span></div>
+            </article>
+
+            <article class="card">
+              <div class="card__top">
+                <span class="avatar avatar--warm">N</span>
+                <span class="card__who">
+                  <span class="card__name">Nix Goblin</span>
+                  <span class="card__handle">@nixgoblin</span>
+                </span>
+              </div>
+              <span class="reason">Trending right now</span>
+              <p class="card__body">
+                io_uring changed how I think about async IO. No syscall per operation,
+                just two rings shared with the kernel.
+              </p>
+              <div class="card__meta"><span>534</span><span>5</span><span>82</span></div>
+            </article>
+
+            <div class="tabbar" aria-hidden="true">
+              <span></span><span class="on"></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="what">
+    <div class="shell">
+      <div class="section__head reveal">
+        <span class="eyebrow">What PreQuit is</span>
+        <h2>A social platform that knows the difference between loud and useful.</h2>
+      </div>
+
+      <p class="lede reveal">
+        Every post belongs to topics. Every interaction you have — what you publish,
+        like, save, share and reply to — folds into an interest profile that decays over
+        time, so what you cared about last year stops crowding out what you care about
+        now. That profile is what the feed ranks against, and what search reasons over.
+      </p>
+
+      <div class="marquee reveal">
+        <div class="stat">
+          <p class="stat__value">Interest-ranked</p>
+          <p class="stat__label">Candidates are scored on topic affinity, semantic similarity, quality and recency — then diversified so one voice cannot take the page.</p>
+        </div>
+        <div class="stat">
+          <p class="stat__value">Explains itself</p>
+          <p class="stat__label">Every post carries the reason it reached you, straight from the ranker. No silent algorithm.</p>
+        </div>
+        <div class="stat">
+          <p class="stat__value">Mutuals only</p>
+          <p class="stat__label">A direct message channel opens when two people follow each other. Nobody can slide into your inbox uninvited.</p>
+        </div>
+        <div class="stat">
+          <p class="stat__value">No ads</p>
+          <p class="stat__label">Nothing in the ranking is for sale, so relevance is the only thing the feed is optimising for.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="feed">
+    <div class="shell">
+      <div class="feature">
+        <div class="feature__text reveal">
+          <span class="eyebrow">The feed</span>
+          <h2>Ranked on what you are into, not who you follow.</h2>
+          <p class="lede">
+            Following someone is a weak signal — people post about more than one thing.
+            PreQuit draws candidates from the people you follow, the topics you lean
+            into and from users whose interests sit close to yours, then ranks the pool
+            as one.
+          </p>
+          <ul class="feature__list">
+            <li>Topic affinity and semantic closeness to your interest profile</li>
+            <li>A guaranteed share of the page from people you actually follow</li>
+            <li>Deliberate exploration, so the feed cannot collapse into one subject</li>
+            <li>Diversity caps, so no single author dominates a session</li>
+            <li>Posts you have already seen are held back automatically</li>
+          </ul>
+        </div>
+
+        <div class="panel reveal">
+          <p class="result-label u-flush">Why this reached you</p>
+
+          <article class="card u-quiet-surface">
+            <div class="card__top">
+              <span class="avatar">F</span>
+              <span class="card__who">
+                <span class="card__name">Ferris Dev</span>
+                <span class="card__handle">@rustacean</span>
+              </span>
+            </div>
+            <p class="card__body">
+              eBPF is quietly the most important thing to happen to Linux
+              observability. Attach a program to any tracepoint, no kernel module.
+            </p>
+          </article>
+
+          <p class="result-label">Signals</p>
+          <div class="person">
+            <span class="person__meta">
+              <span class="person__name">Topic affinity</span>
+              <span class="person__why">You engage with Linux and observability often</span>
+            </span>
+            <span class="score">0.91</span>
+          </div>
+          <div class="person">
+            <span class="person__meta">
+              <span class="person__name">Semantic match</span>
+              <span class="person__why">Close to what you have been saving lately</span>
+            </span>
+            <span class="score">0.84</span>
+          </div>
+          <div class="person">
+            <span class="person__meta">
+              <span class="person__name">Quality</span>
+              <span class="person__why">Sustained engagement from people with depth here</span>
+            </span>
+            <span class="score">0.78</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="search">
+    <div class="shell">
+      <div class="feature feature--flip">
+        <div class="feature__text reveal">
+          <span class="eyebrow">Search</span>
+          <h2>Describe the problem. Meet the people who fixed it.</h2>
+          <p class="lede">
+            Type a sentence rather than a keyword. PreQuit reads the intent, retrieves
+            both lexically and semantically, fuses the two rankings, and answers with
+            the posts that address it — plus the people who have demonstrated real
+            competence in that topic.
+          </p>
+          <ul class="feature__list">
+            <li>Expertise is earned from evidence, not claimed in a bio</li>
+            <li>Measured from published work, answers marked helpful and sustained engagement</li>
+            <li>Inactivity decays a score, so the list stays current</li>
+            <li>Thin evidence is labelled emerging rather than ranked as proven</li>
+          </ul>
+        </div>
+
+        <div class="panel reveal">
+          <div class="query">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.6-3.6" />
+            </svg>
+            <span>grub stopped detecting my other OS after an update</span>
+            <span class="caret" aria-hidden="true"></span>
+          </div>
+
+          <p class="result-label">People who have solved this</p>
+
+          <div class="person">
+            <span class="avatar">A</span>
+            <span class="person__meta">
+              <span class="person__name">Arch Wiki Gremlin</span>
+              <span class="person__why">34 posts on GRUB · 12 answers marked helpful</span>
+            </span>
+            <span class="score">Expert</span>
+          </div>
+
+          <div class="person">
+            <span class="avatar avatar--warm">D</span>
+            <span class="person__meta">
+              <span class="person__name">Dual Boot Survivor</span>
+              <span class="person__why">19 posts on bootloaders · 8 marked helpful</span>
+            </span>
+            <span class="score">Expert</span>
+          </div>
+
+          <div class="person">
+            <span class="avatar">M</span>
+            <span class="person__meta">
+              <span class="person__name">EFI Wrangler</span>
+              <span class="person__why">6 posts on os-prober · building evidence</span>
+            </span>
+            <span class="score">Emerging</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="messages">
+    <div class="shell">
+      <div class="feature">
+        <div class="feature__text reveal">
+          <span class="eyebrow">Messages</span>
+          <h2>A channel that opens when both people agree.</h2>
+          <p class="lede">
+            There is no request inbox to triage and no stranger in your messages. Follow
+            each other and the conversation exists; stop following and it closes. Blocks
+            are enforced on the way in, not after the fact.
+          </p>
+          <ul class="feature__list">
+            <li>Mutual follow is the only key that opens a conversation</li>
+            <li>Messages arrive live, and send optimistically so the app never feels slow</li>
+            <li>A failed send is marked, never silently dropped</li>
+            <li>Share a post straight into a thread</li>
+          </ul>
+        </div>
+
+        <div class="panel reveal">
+          <div class="thread">
+            <p class="bubble bubble--in">Your crumb shot looked unreal. What hydration?</p>
+            <p class="bubble bubble--out">Ninety percent, twelve hour cold retard.</p>
+            <p class="bubble bubble--in">Warm kitchen does most of the work honestly.</p>
+            <p class="bubble bubble--out">Mine doubles in about eight hours. Clearly too cold.</p>
+          </div>
+          <p class="lock">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+              <rect x="4" y="11" width="16" height="10" rx="2.5" />
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+            </svg>
+            Open because you follow each other
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="engineering">
+    <div class="shell">
+      <div class="section__head reveal">
+        <span class="eyebrow">Under it</span>
+        <h2>Built to stay fast when it is under pressure.</h2>
+      </div>
+      <p class="lede reveal">
+        Ranking a feed per request is expensive. The parts that make that affordable are
+        the parts you are never supposed to notice.
+      </p>
+
+      <div class="grid-3">
+        <div class="tile reveal">
+          <div class="tile__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="2" />
+              <rect x="14" y="3" width="7" height="7" rx="2" />
+              <rect x="3" y="14" width="7" height="7" rx="2" />
+              <rect x="14" y="14" width="7" height="7" rx="2" />
+            </svg>
+          </div>
+          <h3>It balances itself</h3>
+          <p>
+            Work is spread across every core and each process decides for itself how
+            much it can run at once, watching its own latency to find the limit rather
+            than guessing at one.
+          </p>
+        </div>
+
+        <div class="tile reveal">
+          <div class="tile__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v4M12 17v4M4.9 7.4l2.8 2.8M16.3 13.8l2.8 2.8M3 12h4M17 12h4" />
+              <circle cx="12" cy="12" r="2.6" />
+            </svg>
+          </div>
+          <h3>Reads never starve writes</h3>
+          <p>
+            Signing in, posting and browsing each hold a reserved share of capacity, so
+            one slow query cannot crowd out everything else. At the edge, requests are
+            turned away quickly rather than queued until they time out.
+          </p>
+        </div>
+
+        <div class="tile reveal">
+          <div class="tile__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+              <path d="M20 4v4h-4" />
+            </svg>
+          </div>
+          <h3>Nothing is lost on a crash</h3>
+          <p>
+            A like and the notification it causes are committed together. If a process
+            dies between the two, the work is still queued and runs when it comes back.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="get">
+    <div class="shell">
+      <div class="cta reveal">
+        <span class="eyebrow">Get started</span>
+        <h2>Follow the subject, not the celebrity.</h2>
+        <p class="lede u-centered">
+          Pick a few topics you actually care about. The feed takes it from there.
+        </p>
+        <div class="hero__actions">
+          <span class="button button--primary button--static">Coming to the App Store</span>
+          <span class="button button--ghost button--static">Coming to Google Play</span>
+        </div>
+        <p class="hero__note">Free, and no advertising in the ranking.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="shell footer__inner">
+    <span class="brand brand--footer">
+      <svg width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="6.5" fill="#fff" />
+        <circle cx="16" cy="5" r="2.4" fill="#ff3b30" />
+        <circle cx="25.5" cy="21.5" r="2.4" fill="#2e7dff" />
+        <circle cx="6.5" cy="21.5" r="2.4" fill="#8a2be2" />
+      </svg>
+      PreQuit
+    </span>
+
+    <nav class="footer__links" aria-label="Footer">
+      <a href="#what">What it is</a>
+      <a href="#feed">Feed</a>
+      <a href="#search">Search</a>
+      <a href="#messages">Messages</a>
+      <a href="#engineering">Engineering</a>
+    </nav>
+
+    <span>Eye of the internet</span>
+  </div>
+</footer>
+
+<script src="assets/main.js" defer></script>
+</body>
 </html>

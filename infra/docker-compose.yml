@@ -1,7 +1,7 @@
 name: prequit
 
 x-api-build: &api-build
-  context: ../../preQuitBackend/server
+  context: ../../preQuitBackend
   dockerfile: Dockerfile
 
 x-api-env: &api-env
