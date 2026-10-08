@@ -15,7 +15,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/domain/**/*.js'],
+      files: ['src/domain/**/*.{ts,tsx}'],
       rules: {
         'no-restricted-imports': deny(
           [
@@ -27,7 +27,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/application/**/*.js'],
+      files: ['src/application/**/*.{ts,tsx}'],
       rules: {
         'no-restricted-imports': deny(
           [
@@ -39,7 +39,7 @@ module.exports = {
       },
     },
     {
-      files: ['src/data/**/*.js'],
+      files: ['src/data/**/*.{ts,tsx}'],
       rules: {
         'no-restricted-imports': deny(
           [
