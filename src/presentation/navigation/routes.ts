@@ -13,6 +13,7 @@ export const ROUTES = {
   DM: 'DM',
 
   PERSONAL: 'Personal',
+  USER_PROFILE: 'UserProfile',
   SETTINGS: 'Settings',
 
   MAIN: 'Main',
@@ -37,6 +38,7 @@ export type RootStackParamList = {
   [ROUTES.RESET_PASSWORD]: undefined;
   [ROUTES.MAIN]: undefined;
   [ROUTES.SETTINGS]: undefined;
+  [ROUTES.USER_PROFILE]: { handle: string };
   [ROUTES.DM]: {
     conversationId?: string | null;
     peerId?: string | null;
