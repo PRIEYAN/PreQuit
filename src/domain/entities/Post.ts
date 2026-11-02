@@ -33,6 +33,7 @@ export interface PostCounts {
   readonly comments: number;
   readonly shares: number;
   readonly saves: number;
+  readonly views: number;
 }
 
 export interface PostViewerState {
@@ -71,7 +72,7 @@ export type PostPayload = Partial<Omit<Post, 'author' | 'counts' | 'viewer'>> & 
   readonly viewer?: Partial<PostViewerState>;
 };
 
-const EMPTY_COUNTS: PostCounts = { likes: 0, comments: 0, shares: 0, saves: 0 };
+const EMPTY_COUNTS: PostCounts = { likes: 0, comments: 0, shares: 0, saves: 0, views: 0 };
 
 const EMPTY_VIEWER: PostViewerState = {
   hasLiked: false,

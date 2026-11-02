@@ -4,7 +4,7 @@ describe('Post entity', () => {
   it('fills in a complete shape from a sparse payload', () => {
     const post = createPost({ id: 'p1' });
 
-    expect(post.counts).toEqual({ likes: 0, comments: 0, shares: 0, saves: 0 });
+    expect(post.counts).toEqual({ likes: 0, comments: 0, shares: 0, saves: 0, views: 0 });
     expect(post.viewer).toEqual({ hasLiked: false, hasSaved: false, canEdit: false, canDelete: false });
     expect(post.media).toEqual([]);
     expect(post.author.displayName).toBe('');

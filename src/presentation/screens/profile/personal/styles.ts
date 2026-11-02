@@ -107,6 +107,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingBottom: 14,
+  },
+  title: {
+    color: COLORS.white,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  visibilityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: COLORS.glassStrong,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+  },
+  visibilityText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  sortWrap: {
+    marginTop: 18,
+    marginBottom: 6,
+  },
+  placeholder: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  placeholderBody: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    textAlign: 'center',
+  },
 });
 
 export default styles;
