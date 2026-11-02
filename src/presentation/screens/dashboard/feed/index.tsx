@@ -43,13 +43,8 @@ const Feed = () => {
   const [activePost, setActivePost] = useState<Post | null>(null);
   const { items, isLoading, isRefreshing, error, refresh, toggleLike, toggleSave } = useFeed(surface);
 
-  const openAuthorChat = useCallback(
-    (author: PostAuthor) =>
-      navigation.navigate(ROUTES.DM, {
-        peerId: author.id,
-        name: author.displayName,
-        status: `@${author.handle}`,
-      }),
+  const openAuthorProfile = useCallback(
+    (author: PostAuthor) => navigation.navigate(ROUTES.USER_PROFILE, { handle: author.handle }),
     [navigation],
   );
 
@@ -62,11 +57,11 @@ const Feed = () => {
         post={item}
         onToggleLike={toggleLike}
         onToggleSave={toggleSave}
-        onPressAuthor={openAuthorChat}
+        onPressAuthor={openAuthorProfile}
         onPressComments={openComments}
       />
     ),
-    [toggleLike, toggleSave, openAuthorChat, openComments],
+    [toggleLike, toggleSave, openAuthorProfile, openComments],
   );
 
   const keyExtractor = useCallback((item: Post) => item.id, []);

@@ -7,6 +7,8 @@ export const ErrorCode = {
   VALIDATION_FAILED: 'VALIDATION_FAILED',
   CAPACITY_EXHAUSTED: 'CAPACITY_EXHAUSTED',
   RATE_LIMITED: 'RATE_LIMIT_EXCEEDED',
+  PROFILE_IS_PRIVATE: 'PROFILE_IS_PRIVATE',
+  MESSAGES_NOT_ACCEPTED: 'MESSAGES_NOT_ACCEPTED',
   UNKNOWN: 'UNKNOWN',
 } as const;
 
@@ -61,6 +63,9 @@ export class AppError extends Error {
 export const isAppError = (value: unknown): value is AppError => value instanceof AppError;
 
 export const isOfflineError = (value: unknown): boolean => isAppError(value) && value.isOffline;
+
+export const isPrivateProfileError = (value: unknown): boolean =>
+  isAppError(value) && value.code === ErrorCode.PROFILE_IS_PRIVATE;
 
 export const messageOf = (error: unknown, fallback: string): string => {
   if (isAppError(error)) return error.message;

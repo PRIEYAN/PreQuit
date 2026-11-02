@@ -176,6 +176,8 @@ export class FakeProfileRepository implements ProfileRepository {
   }
 
   async updateProfile(): Promise<void> {}
+
+  async updatePrivacy(): Promise<void> {}
 }
 
 export class FakeAuthRepository implements AuthRepository {

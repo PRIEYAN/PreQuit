@@ -10,6 +10,7 @@ import SignIn from '../screens/auth/signin';
 import SignUp from '../screens/auth/signup';
 import ResetPassword from '../screens/auth/resetpassword';
 import Settings from '../screens/profile/settings';
+import UserProfile from '../screens/profile/user';
 import DM from '../screens/friends/dm';
 import { useSession } from '../hooks/useSession';
 
@@ -51,6 +52,11 @@ const AppStack = () => (
   <>
     <Stack.Screen name={ROUTES.MAIN} component={MainTabs} />
     <Stack.Screen name={ROUTES.SETTINGS} component={Settings} />
+    <Stack.Screen
+      name={ROUTES.USER_PROFILE}
+      component={UserProfile}
+      options={{ animation: 'slide_from_right' }}
+    />
     <Stack.Screen name={ROUTES.DM} component={DM} options={{ animation: 'slide_from_right' }} />
   </>
 );
