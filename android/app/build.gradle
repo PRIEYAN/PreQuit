@@ -119,4 +119,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // Android's Fresco ships without animated-GIF support, so an <Image> of a
+    // .gif renders only its first frame until this decoder is on the classpath.
+    implementation("com.facebook.fresco:animated-gif:3.2.0")
 }

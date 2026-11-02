@@ -28,6 +28,9 @@ import { SendMessageUseCase } from '../src/application/messaging/SendMessageUseC
 import { OpenConversationUseCase } from '../src/application/messaging/OpenConversationUseCase';
 import { LoadMyProfileUseCase } from '../src/application/profile/LoadMyProfileUseCase';
 import { LoadUserPostsUseCase } from '../src/application/profile/LoadUserPostsUseCase';
+import { LoadUserProfileUseCase } from '../src/application/profile/LoadUserProfileUseCase';
+import { SetAccountVisibilityUseCase } from '../src/application/profile/SetAccountVisibilityUseCase';
+import { UpdatePrivacySettingsUseCase } from '../src/application/profile/UpdatePrivacySettingsUseCase';
 
 import {
   FakeAuthRepository,
@@ -97,6 +100,9 @@ export const createTestContainer = (overrides: TestContainerOverrides = {}): Tes
       openConversation: new OpenConversationUseCase(repositories.messaging),
       loadMyProfile: new LoadMyProfileUseCase(repositories.profile),
       loadUserPosts: new LoadUserPostsUseCase(repositories.profile),
+      loadUserProfile: new LoadUserProfileUseCase(repositories.profile),
+      setAccountVisibility: new SetAccountVisibilityUseCase(repositories.profile),
+      updatePrivacySettings: new UpdatePrivacySettingsUseCase(repositories.profile),
     },
     onSessionLost(listener: () => void): Unsubscribe {
       sessionLostListeners.add(listener);

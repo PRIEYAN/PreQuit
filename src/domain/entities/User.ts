@@ -23,6 +23,23 @@ export interface TopicAffinity {
   readonly weight?: number;
 }
 
+export type PostAudience = 'everyone' | 'followers';
+export type MessageAudience = 'everyone' | 'followers';
+
+export interface PrivacySettings {
+  readonly showActivityStatus: boolean;
+  readonly whoCanMessage: MessageAudience;
+  readonly whoCanViewPosts: PostAudience;
+  readonly allowMessageRequests: boolean;
+}
+
+export const DEFAULT_PRIVACY: PrivacySettings = {
+  showActivityStatus: true,
+  whoCanMessage: 'followers',
+  whoCanViewPosts: 'everyone',
+  allowMessageRequests: true,
+};
+
 export interface User {
   readonly id: string;
   readonly handle: string;
@@ -36,10 +53,15 @@ export interface User {
   readonly links: readonly ProfileLink[];
   readonly topTopics: readonly TopicAffinity[];
   readonly viewer: UserViewerState | null;
+  readonly privacy: PrivacySettings;
 }
 
-export type UserPayload = Partial<Omit<User, 'counts'>> & {
+export type UserPayload = Partial<Omit<User, 'counts' | 'privacy'>> & {
   readonly counts?: Partial<UserCounts>;
+  // The API nests privacy under `settings`; `privacy` is accepted too so a
+  // locally-built User round-trips through this payload unchanged.
+  readonly settings?: { readonly privacy?: Partial<PrivacySettings> };
+  readonly privacy?: Partial<PrivacySettings>;
 };
 
 const EMPTY_COUNTS: UserCounts = { posts: 0, followers: 0, following: 0 };
@@ -57,6 +79,7 @@ export const createUser = (raw: UserPayload = {}): User => ({
   links: raw.links ?? [],
   topTopics: raw.topTopics ?? [],
   viewer: raw.viewer ?? null,
+  privacy: { ...DEFAULT_PRIVACY, ...raw.settings?.privacy, ...raw.privacy },
 });
 
 export const initialOf = (user: Pick<User, 'displayName' | 'handle'> | null | undefined): string =>

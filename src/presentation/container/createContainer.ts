@@ -42,6 +42,9 @@ import { SendMessageUseCase } from '../../application/messaging/SendMessageUseCa
 import { OpenConversationUseCase } from '../../application/messaging/OpenConversationUseCase';
 import { LoadMyProfileUseCase } from '../../application/profile/LoadMyProfileUseCase';
 import { LoadUserPostsUseCase } from '../../application/profile/LoadUserPostsUseCase';
+import { LoadUserProfileUseCase } from '../../application/profile/LoadUserProfileUseCase';
+import { SetAccountVisibilityUseCase } from '../../application/profile/SetAccountVisibilityUseCase';
+import { UpdatePrivacySettingsUseCase } from '../../application/profile/UpdatePrivacySettingsUseCase';
 
 export interface Repositories {
   readonly auth: AuthRepository;
@@ -71,6 +74,9 @@ export interface UseCases {
   readonly openConversation: OpenConversationUseCase;
   readonly loadMyProfile: LoadMyProfileUseCase;
   readonly loadUserPosts: LoadUserPostsUseCase;
+  readonly loadUserProfile: LoadUserProfileUseCase;
+  readonly setAccountVisibility: SetAccountVisibilityUseCase;
+  readonly updatePrivacySettings: UpdatePrivacySettingsUseCase;
 }
 
 export type Unsubscribe = () => void;
@@ -151,6 +157,9 @@ const buildUseCases = (repositories: Repositories, session: SessionRepository): 
 
   loadMyProfile: new LoadMyProfileUseCase(repositories.profile),
   loadUserPosts: new LoadUserPostsUseCase(repositories.profile),
+  loadUserProfile: new LoadUserProfileUseCase(repositories.profile),
+  setAccountVisibility: new SetAccountVisibilityUseCase(repositories.profile),
+  updatePrivacySettings: new UpdatePrivacySettingsUseCase(repositories.profile),
 });
 
 export const createContainer = (options: ContainerOptions = {}): AppContainer => {

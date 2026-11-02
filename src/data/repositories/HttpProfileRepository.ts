@@ -1,10 +1,11 @@
 import type { Post } from '../../domain/entities/Post';
-import type { User, UserPayload } from '../../domain/entities/User';
+import type { PrivacySettings, User, UserPayload } from '../../domain/entities/User';
 import type {
   ProfilePatch,
+  ProfilePostsOptions,
   ProfileRepository,
 } from '../../domain/repositories/ProfileRepository';
-import type { PageOptions, RequestOptions } from '../../domain/repositories/common';
+import type { RequestOptions } from '../../domain/repositories/common';
 import type { HttpClient } from '../http/HttpClient';
 import { toUser } from '../mappers/UserMapper';
 import { toPostList } from '../mappers/PostMapper';
@@ -27,10 +28,12 @@ export class HttpProfileRepository implements ProfileRepository {
     );
   }
 
-  async postsOf(userId: string, options: PageOptions = {}): Promise<readonly Post[]> {
-    const { limit = 20, signal } = options;
+  async postsOf(userId: string, options: ProfilePostsOptions = {}): Promise<readonly Post[]> {
+    const { limit = 20, sort = 'recent', before, signal } = options;
+    const query = new URLSearchParams({ limit: String(limit), sort });
+    if (before) query.set('before', before);
     const dto = await this.http.get<Parameters<typeof toPostList>[0]>(
-      `/users/${userId}/posts?limit=${limit}`,
+      `/users/${userId}/posts?${query.toString()}`,
       signal ? { signal } : {},
     );
     return toPostList(dto);
@@ -38,6 +41,10 @@ export class HttpProfileRepository implements ProfileRepository {
 
   updateProfile(patch: ProfilePatch): Promise<unknown> {
     return this.http.patch('/me/profile', patch);
+  }
+
+  updatePrivacy(patch: Partial<PrivacySettings>): Promise<unknown> {
+    return this.http.patch('/me/settings', { privacy: patch });
   }
 }
 

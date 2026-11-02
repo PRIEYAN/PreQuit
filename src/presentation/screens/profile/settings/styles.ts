@@ -67,6 +67,80 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
+
+  stackRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 10,
+  },
+  rowIcon: {
+    marginRight: 10,
+  },
+  rowAction: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sectionHeadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionHint: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 8,
+    paddingHorizontal: 2,
+  },
+  activePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: COLORS.white,
+    marginBottom: 10,
+  },
+  activePillText: {
+    color: COLORS.black,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  // The non-active mode's card stays editable; the dimming only signals which
+  // set of rules the account is currently running under.
+  cardInactive: {
+    opacity: 0.55,
+  },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.glass,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+    padding: 3,
+    gap: 3,
+  },
+  segmentItem: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  segmentItemActive: {
+    backgroundColor: COLORS.white,
+  },
+  segmentText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  segmentTextActive: {
+    color: COLORS.black,
+  },
+  errorText: {
+    color: '#ff6b6b',
+    fontSize: 12,
+  },
 });
 
 export default styles;
